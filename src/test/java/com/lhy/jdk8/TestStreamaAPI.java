@@ -2,12 +2,14 @@ package com.lhy.jdk8;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.DoubleSummaryStatistics;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeSet;import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -23,15 +25,10 @@ import com.lhy.jdk8.Employee.Status;
  */
 public class TestStreamaAPI {
 
-	List<Employee> emps = Arrays.asList(
-			new Employee(102, "李四", 18, 6666.66, Status.BUSY),
-			new Employee(101, "张三", 18, 9999.99, Status.FREE), 
-			new Employee(101, "张三1", 18, 9999.99, Status.FREE), 
-			new Employee(101, "张三2", 18, 9999.99, Status.FREE), 
-			new Employee(103, "王五", 28,3333.33, Status.VOCATION), 
-			new Employee(104, "赵六", 8, 7777.77, Status.VOCATION),
-			new Employee(105, "田七", 38, 5555.55, Status.BUSY)
-	);
+	List<Employee> emps = Arrays.asList(new Employee(102, "李四", 18, 6666.66, Status.BUSY),
+			new Employee(101, "张三1", 18, 9999.99, Status.FREE), new Employee(101, "张三1", 18, 9999.99, Status.FREE),
+			new Employee(101, "张三2", 18, 9999.99, Status.FREE), new Employee(103, "王五", 28, 3333.33, Status.VOCATION),
+			new Employee(104, "赵六", 8, 7777.77, Status.VOCATION), new Employee(105, "田七", 38, 5555.55, Status.BUSY));
 
 	// 1.创建Stream
 	@Test
@@ -60,7 +57,8 @@ public class TestStreamaAPI {
 	}
 
 	/**
-	 * 筛选与切片 filter：接受Lambda，从流中排除某些元素。 
+	 * 筛选与切片 
+	 * filter：接受Lambda，从流中排除某些元素。 
 	 * limit(n)：截断流，使其元素不超过给定的数量。
 	 * skip(n)：跳过元素，返回一个扔掉了的n个元素流，若流中的元素不足n则返回null，可以与limit(n)查看分页效果。
 	 * distinct：筛选，通过流所生成元素的hashcode()与equals()去除重复元素，如果Stream的类型是Javabean
@@ -69,16 +67,10 @@ public class TestStreamaAPI {
 	@Test
 	public void test02() {
 		// forEach为终止操作，只有做了终止操作，所有的中间操作才会一次性全部执行，称为"惰性求值"
-		emps.stream()
-			.filter((e) -> {
-					System.out.println("中间处理操作");
-					return e.getAge() > 20;
-				}
-			)
-			.skip(0)
-			.limit(5)
-			.distinct()
-			.forEach(System.out::println);
+		emps.stream().filter((e) -> {
+			System.out.println("中间处理操作");
+			return e.getAge() > 20;
+		}).skip(0).limit(5).distinct().forEach(System.out::println);
 
 	}
 
@@ -91,29 +83,26 @@ public class TestStreamaAPI {
 
 		// 提取
 		emps.stream()
-		// .map((e) -> e.getName())
+				// .map((e) -> e.getName())
 				.map(Employee::getName).forEach(System.out::println);
 
 		List<String> strList = Arrays.asList("aa", "bb", "cc", "dd");
 
 		// 转换成它形式
 		strList.stream()
-		// .map((e) -> e.toUpperCase())
+				// .map((e) -> e.toUpperCase())
 				.map(String::toLowerCase).forEach(System.out::println);
 
 		System.out.println("-----------------------------------");
 		/**
-		 * 测试flatMap 
-		 * 先使用map映射，map就是将一个流添加到另外一个流中， flatMap是将流中的值添加到另外一个流中
+		 * 测试flatMap 先使用map映射，map就是将一个流添加到另外一个流中， flatMap是将流中的值添加到另外一个流中
 		 */
-		Stream<Stream<Character>> stream2 = strList.stream().map(
-				TestStreamaAPI::filterCharacter);
+		Stream<Stream<Character>> stream2 = strList.stream().map(TestStreamaAPI::filterCharacter);
 		stream2.forEach((sm) -> {
 			sm.forEach(System.out::println);
 		});
 		System.out.println("-----------------------------------");
-		Stream<Character> stream3 = strList.stream().flatMap(
-				TestStreamaAPI::filterCharacter);
+		Stream<Character> stream3 = strList.stream().flatMap(TestStreamaAPI::filterCharacter);
 		stream3.forEach(System.out::println);
 
 	}
@@ -125,234 +114,227 @@ public class TestStreamaAPI {
 		}
 		return list.stream();
 	}
-	
+
 	/**
-	 * 排序
-	 * sorted()--自然排序使用的Comparable类
-	 * sorted(Comparator com)--自定义排序使用的Compartor类
+	 * 排序 sorted()--自然排序使用的Comparable类 sorted(Comparator com)--自定义排序使用的Compartor类
 	 */
 	@Test
-	public void test04(){
-		List<String> list = Arrays.asList("bb","dd","cc","aa");
-		list.stream()
-			.sorted()
-			.forEach(System.out::println);
+	public void test04() {
+		List<String> list = Arrays.asList("bb", "dd", "cc", "aa");
+		list.stream().sorted().forEach(System.out::println);
 		System.out.println("-----------------------------------");
-		emps.stream()
-			.sorted((e1,e2) ->{
-				if(e1.getAge() == e2.getAge())
-					return e1.getName().compareTo(e2.getName());
-				else
-					return -Integer.compare(e1.getAge(), e2.getAge()); //加上-就是降序
-			})
-			.forEach(System.out::println);
+		emps.stream().sorted((e1, e2) -> {
+			if (e1.getAge() == e2.getAge())
+				return e1.getName().compareTo(e2.getName());
+			else
+				return -Integer.compare(e1.getAge(), e2.getAge()); // 加上-就是降序
+		}).forEach(System.out::println);
 	}
-	
-	
+
 	/**
-	 * 终止操作
-	 * allMatch:检查是否匹配所有元素
-	 * anyMatch:检查是否至少匹配一个元素
+	 * 终止操作 allMatch:检查是否匹配所有元素 
+	 * anyMatch:检查是否至少匹配一个元素 
 	 * noneMatch:返回第一个元素
-	 * findAny:返回当前流中的任意元素
-	 * findFirst:返回第一个元素
-	 * count:返回流中元素的总数
+	 * findAny:返回当前流中的任意元素 
+	 * findFirst:返回第一个元素 
+	 * count:返回流中元素的总数 
 	 * max:返回流中元素的最大值
 	 * min:返回流中元素的最小值
 	 */
 	@Test
-	public void test05(){
-		
+	public void test05() {
+
 		Boolean b1 = emps.stream().allMatch((e) -> e.getStatus().equals(Status.BUSY));
 		System.out.println(b1);
-		
+
 		Boolean b2 = emps.stream().anyMatch((e) -> e.getStatus().equals(Status.FREE));
 		System.out.println(b2);
-		
+
 		Boolean b3 = emps.stream().noneMatch((e) -> e.getStatus().equals(Status.FREE));
 		System.out.println(b3);
-		
-		//返回任意一条可以使用并行流，多线程匹配，谁先匹配到就返回谁。
-		//串行流是按顺序找的
-		Optional<Employee> op2 = emps.parallelStream()
-									.filter((e) -> e.getAge() == 18)
-									.findAny();
+
+		// 返回任意一条可以使用并行流，多线程匹配，谁先匹配到就返回谁。
+		// 串行流是按顺序找的
+		Optional<Employee> op2 = emps.parallelStream().filter((e) -> e.getAge() == 18).findAny();
 		System.out.println(op2.get());
-		
-		Optional<Employee> op = emps.stream()
-				.sorted((e1,e2) -> -Double.compare(e1.getSalary(), e2.getSalary()))
+
+		Optional<Employee> op = emps.stream().sorted((e1, e2) -> -Double.compare(e1.getSalary(), e2.getSalary()))
 				.findFirst();
 		System.out.println(op.get());
-		
+
 		Long count = emps.stream().filter((e) -> e.getAge() == 18).count();
 		System.out.println(count);
-		
-		//获取最高工资的值，先提取在统计
-		Optional<Double> op3 = emps.stream()
-				.map(Employee::getSalary)
-				.max(Double::compare);
+
+		// 获取最高工资的值，先提取在统计
+		Optional<Double> op3 = emps.stream().map(Employee::getSalary).max(Double::compare);
 		System.out.println(op3.get());
-		//统计一个集合中工资最高的员工(Employee)对象
-		Optional<Employee> op4 = emps.stream().max((e1,e2) -> Double.compare(e1.getSalary(), e2.getSalary()));
+		// 统计一个集合中工资最高的员工(Employee)对象
+		Optional<Employee> op4 = emps.stream().max((e1, e2) -> Double.compare(e1.getSalary(), e2.getSalary()));
 		System.out.println(op4.get());
-		
-		//获取最低工资的值，先提取在统计
-		Optional<Double> op5 = emps.stream()
-				.map(Employee::getSalary)
-				.min(Double::compare);
+
+		// 获取最低工资的值，先提取在统计
+		Optional<Double> op5 = emps.stream().map(Employee::getSalary).min(Double::compare);
 		System.out.println(op5.get());
-		//统计一个集合中工资最低的员工(Employee)对象
-		Optional<Employee> op6 = emps.stream().min((e1,e2) -> Double.compare(e1.getSalary(), e2.getSalary()));
+		// 统计一个集合中工资最低的员工(Employee)对象
+		Optional<Employee> op6 = emps.stream().min((e1, e2) -> Double.compare(e1.getSalary(), e2.getSalary()));
 		System.out.println(op6.get());
 	}
-	
-	//注意：流(Stream)进行了终止操作后，不能再次使用
+
+	// 注意：流(Stream)进行了终止操作后，不能再次使用
 	@Test
-	public void test06(){
-		Stream<Employee> stream = emps.stream()
-		 .filter((e) -> e.getStatus().equals(Status.FREE));
-		
+	public void test06() {
+		Stream<Employee> stream = emps.stream().filter((e) -> e.getStatus().equals(Status.FREE));
+
 		System.out.println(stream.count());
-		
-		stream.map(Employee::getSalary)
-			.max(Double::compare);
+
+		stream.map(Employee::getSalary).max(Double::compare);
 	}
-	
-	
+
 	/**
-	 * 归约
-	 * reduce(T identity, BinaryOperator) / reduce(BinaryOperator) 
+	 * 归约 reduce(T identity, BinaryOperator) / reduce(BinaryOperator)
 	 * ——可以将流中元素反复结合起来，得到一个值。
 	 */
 	@Test
-	public void test07(){
-		List<Integer> list = Arrays.asList(1,2,3,4,5,6,7);
+	public void test07() {
+		List<Integer> list = Arrays.asList(1, 2, 3, 4, 5, 6, 7);
 		/**
-		 * (0, (x , y) -> x + y) 解释：
-		 *    x     y
-		 *    0+1 + 2
-		 *    3   + 3
-		 *    6   + 4
-		 *    10  + 5
-		 *    15  + 6
-		 *    21  + 7
+		 * (0, (x , y) -> x + y) 解释： x y 0+1 + 2 3 + 3 6 + 4 10 + 5 15 + 6 21 + 7
 		 * 这样子每次传值相加
 		 */
-		Integer num = list.stream().reduce(0, (x , y) -> x + y);
+		Integer num = list.stream().reduce(0, (x, y) -> x + y);
 		System.out.println(num);
-		
+
 		/**
 		 * 以下返回类型为Optional是因为emps集合数据可能为空，为啥上面累加返回的是基本数据类型是因为传入了起始值是0开始累加就算集合为空也会是0。
 		 * Double的sum方法是jdk1.8的
 		 */
-		Optional<Double> op = emps.stream()
-				.map(Employee::getSalary)
-				.reduce(Double::sum);
+		Optional<Double> op = emps.stream().map(Employee::getSalary).reduce(Double::sum);
 		System.out.println(op.get());
 	}
-	
-	
+
 	/**
 	 * collect——将流转换成其它形式，接受一个Collector接口的实现，用于给Stream中的元素做汇总的方法
 	 */
 	@Test
-	public void test08(){
-		
-		List<String> list = emps.stream()
-			.map(Employee::getName)
-			.collect(Collectors.toList());
+	public void test08() {
+
+		List<String> list = emps.stream().map(Employee::getName).collect(Collectors.toList());
 		list.forEach(System.out::println);
-		
+
 		System.out.println("-----------------------------------");
-		
-		Set<String> set = emps.stream()
-				.map(Employee::getName)
-				.collect(Collectors.toSet());
+
+		Set<String> set = emps.stream().map(Employee::getName).collect(Collectors.toSet());
 		set.forEach(System.out::println);
-		
+
 		System.out.println("-----------------------------------");
-		
-		HashSet<String> hs = emps.stream()
-					.map(Employee::getName)
-					.collect(Collectors.toCollection(HashSet::new));
+
+		HashSet<String> hs = emps.stream().map(Employee::getName).collect(Collectors.toCollection(HashSet::new));
 		System.out.println(hs);
-		
+
 		System.out.println("-----------------------------------");
-		
-		Optional<Double> max = emps.stream()
-					.map(Employee::getSalary)
-					//.collect(Collectors.maxBy((e,q) -> Double.compare(e, q)));
-					.collect(Collectors.maxBy(Double::compareTo));
+
+		Optional<Double> max = emps.stream().map(Employee::getSalary)
+				// .collect(Collectors.maxBy((e,q) -> Double.compare(e, q)));
+				.collect(Collectors.maxBy(Double::compareTo));
 		System.out.println(max.get());
-		
+
 		System.out.println("-----------------------------------");
-		
-		Optional<Double> max2 = emps.stream()
-				.map(Employee::getSalary)
-				.collect(Collectors.maxBy(Double::compare));
+
+		Optional<Double> max2 = emps.stream().map(Employee::getSalary).collect(Collectors.maxBy(Double::compare));
 		System.out.println(max2.get());
-		
+
 		Optional<Employee> op = emps.stream()
-			.collect(Collectors.minBy((e1, e2) -> Double.compare(e1.getSalary(), e2.getSalary())));
-		
+				.collect(Collectors.minBy((e1, e2) -> Double.compare(e1.getSalary(), e2.getSalary())));
+
 		System.out.println(op.get());
-		
-		Double sum = emps.stream()
-			.collect(Collectors.summingDouble(Employee::getSalary));
+
+		Double sum = emps.stream().collect(Collectors.summingDouble(Employee::getSalary));
 		System.out.println(sum);
-		
-		Double avg = emps.stream()
-			.collect(Collectors.averagingDouble(Employee::getSalary));
+
+		Double avg = emps.stream().collect(Collectors.averagingDouble(Employee::getSalary));
 		System.out.println(avg);
-		
-		Long count = emps.stream()
-			.collect(Collectors.counting());
+
+		Long count = emps.stream().collect(Collectors.counting());
 		System.out.println(count);
-		
+
 		System.out.println("--------------------------------------------");
-		
-		DoubleSummaryStatistics dss = emps.stream()
-			.collect(Collectors.summarizingDouble(Employee::getSalary));
+
+		DoubleSummaryStatistics dss = emps.stream().collect(Collectors.summarizingDouble(Employee::getSalary));
 		System.out.println(dss.getMax());
-		
+
 	}
-	
+
 	/**
 	 * 分组
 	 */
 	@Test
-	public void test09(){
-		Map<Status, List<Employee>> map = emps.stream()
-				.collect(Collectors.groupingBy(Employee::getStatus));
+	public void test09() {
+		Map<Status, List<Employee>> map = emps.stream().collect(Collectors.groupingBy(Employee::getStatus));
 		System.out.println(map);
 	}
-	
+
 	/**
 	 * 多级分组
 	 */
 	@Test
-	public void test10(){
+	public void test10() {
 		Map<Status, Map<String, List<Employee>>> map = emps.stream()
 				.collect(Collectors.groupingBy(Employee::getStatus, Collectors.groupingBy((e) -> {
-					if(((Employee) e).getAge() >= 60)
+					if (((Employee) e).getAge() >= 60)
 						return "老年";
-					else if(((Employee) e).getAge() >= 35)
+					else if (((Employee) e).getAge() >= 35)
 						return "中年";
 					else
 						return "成年";
 				})));
-			
-			System.out.println(map);
+
+		System.out.println(map);
 	}
-	
+
 	/**
 	 * 分区
 	 */
 	@Test
-	public void test11(){
+	public void test11() {
 		Map<Boolean, List<Employee>> map = emps.stream()
 				.collect(Collectors.partitioningBy((e) -> e.getSalary() >= 5000));
-			System.out.println(map);
+		System.out.println(map);
+	}
+
+	/**
+	 * 根据对象的某个属性去重
+	 */
+	@Test
+	public void test12() {
+
+		List<Employee> list = emps.stream().collect(Collectors.collectingAndThen(
+				Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(Employee::getName))), ArrayList::new));
+		list.stream().forEach(e -> {
+			System.out.println(e.toString());
+		});
+		
 	}
 	
+	/**
+	 * skip,limit 分页
+	 */
+	@Test
+	public void test13() {
+		
+		int pageSize = 5;
+		
+		int totalPage = (emps.size() + pageSize -1) / pageSize;
+		int startPage = 0;
+		for(int i = 1;i <= totalPage; i++) {
+			startPage = (i - 1) * pageSize;
+			List<Employee> list = emps.stream().skip(startPage).limit(pageSize).collect(Collectors.toList());
+			list.stream().forEach(e -> {
+				System.out.println(e.toString());
+			});
+			System.out.println("-------------------------");
+		}
+		
+		
+	}
+
 }
